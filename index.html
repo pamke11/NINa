@@ -12,10 +12,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
-   <!-- Leaflet.js & Canvas-Confetti CDN -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    
     <style>
         :root {
             --bg-primary: #070913;
@@ -359,9 +357,73 @@
                 </div>
             </div>
 
-            <!-- Prava Leaflet Karta -->
-            <div class="w-full h-80 sm:h-96 rounded-2xl overflow-hidden border border-white/15 shadow-inner relative">
-                <div id="travel-map" class="w-full h-full"></div>
+         <!-- Interaktivna SVG Karta (100% radi bez vanjskih servisa) -->
+            <div class="w-full rounded-2xl overflow-hidden border border-white/15 bg-slate-950/90 p-2 sm:p-4 relative">
+                <svg viewBox="0 0 640 360" class="w-full h-auto block select-none">
+                    <!-- Mreža koordinata -->
+                    <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+                        <line x1="0" y1="90" x2="640" y2="90" />
+                        <line x1="0" y1="180" x2="640" y2="180" />
+                        <line x1="0" y1="270" x2="640" y2="270" />
+                        <line x1="160" y1="0" x2="160" y2="360" />
+                        <line x1="320" y1="0" x2="320" y2="360" />
+                        <line x1="480" y1="0" x2="480" y2="360" />
+                    </g>
+
+                    <!-- Stylizirana silueta Mediterana i Europe -->
+                    <path d="M40,210 L110,190 L140,150 L210,120 L250,145 L270,185 L295,195 L325,130 L380,120 L430,160 L540,175 L560,225 L470,235 L410,215 L385,265 L345,255 L325,215 L275,235 L255,285 L235,280 L235,220 L185,180 L125,225 L75,245 Z"
+                          fill="rgba(30, 41, 59, 0.75)" stroke="rgba(148, 163, 184, 0.25)" stroke-width="1.5" />
+
+                    <!-- Isprekidane linije iz Zagreba prema svim destinacijama -->
+                    <g stroke="#f43f5e" stroke-width="2" stroke-dasharray="5,5" opacity="0.75">
+                        <line x1="275" y1="135" x2="245" y2="155" stroke="#fbbf24" /> <!-- Pula -->
+                        <line x1="275" y1="135" x2="255" y2="122" /> <!-- Ljubljana -->
+                        <line x1="275" y1="135" x2="345" y2="152" /> <!-- Beograd -->
+                        <line x1="275" y1="135" x2="330" y2="102" /> <!-- Budimpešta -->
+                        <line x1="275" y1="135" x2="262" y2="288" /> <!-- Malta -->
+                        <line x1="275" y1="135" x2="385" y2="252" /> <!-- Grčka -->
+                        <line x1="275" y1="135" x2="495" y2="205" /> <!-- Istanbul -->
+                        <line x1="275" y1="135" x2="105" y2="225" /> <!-- Mallorca -->
+                    </g>
+
+                    <!-- PINOVI (klikabilni) -->
+                    <g onclick="selectTravelLocation('pula', true)" class="cursor-pointer">
+                        <circle cx="245" cy="155" r="7" fill="#fbbf24" stroke="#fff" stroke-width="2" />
+                        <text x="233" y="172" fill="#fde68a" font-size="11" font-weight="bold" text-anchor="end">Pula</text>
+                    </g>
+                    <g onclick="selectTravelLocation('zagreb', true)" class="cursor-pointer">
+                        <circle cx="275" cy="135" r="8" fill="#fbbf24" stroke="#fff" stroke-width="2" />
+                        <text x="287" y="132" fill="#fff" font-size="12" font-weight="bold">Zagreb ❤️</text>
+                    </g>
+                    <g onclick="selectTravelLocation('ljubljana', true)" class="cursor-pointer">
+                        <circle cx="255" cy="122" r="6" fill="#f43f5e" stroke="#fff" stroke-width="1.5" />
+                        <text x="245" y="112" fill="#cbd5e1" font-size="10" text-anchor="end">Ljubljana</text>
+                    </g>
+                    <g onclick="selectTravelLocation('beograd', true)" class="cursor-pointer">
+                        <circle cx="345" cy="152" r="6" fill="#f43f5e" stroke="#fff" stroke-width="1.5" />
+                        <text x="356" y="155" fill="#cbd5e1" font-size="10">Beograd</text>
+                    </g>
+                    <g onclick="selectTravelLocation('budimpesta', true)" class="cursor-pointer">
+                        <circle cx="330" cy="102" r="6" fill="#f43f5e" stroke="#fff" stroke-width="1.5" />
+                        <text x="330" y="90" fill="#cbd5e1" font-size="10" text-anchor="middle">Budimpešta</text>
+                    </g>
+                    <g onclick="selectTravelLocation('malta', true)" class="cursor-pointer">
+                        <circle cx="262" cy="288" r="6" fill="#f43f5e" stroke="#fff" stroke-width="1.5" />
+                        <text x="262" y="305" fill="#cbd5e1" font-size="10" text-anchor="middle">Malta</text>
+                    </g>
+                    <g onclick="selectTravelLocation('grcka', true)" class="cursor-pointer">
+                        <circle cx="385" cy="252" r="6" fill="#f43f5e" stroke="#fff" stroke-width="1.5" />
+                        <text x="385" y="269" fill="#cbd5e1" font-size="10" text-anchor="middle">Grčka</text>
+                    </g>
+                    <g onclick="selectTravelLocation('istanbul', true)" class="cursor-pointer">
+                        <circle cx="495" cy="205" r="6" fill="#f43f5e" stroke="#fff" stroke-width="1.5" />
+                        <text x="495" y="192" fill="#cbd5e1" font-size="10" text-anchor="middle">Istanbul</text>
+                    </g>
+                    <g onclick="selectTravelLocation('mallorca', true)" class="cursor-pointer">
+                        <circle cx="105" cy="225" r="6" fill="#f43f5e" stroke="#fff" stroke-width="1.5" />
+                        <text x="105" y="242" fill="#cbd5e1" font-size="10" text-anchor="middle">Mallorca</text>
+                    </g>
+                </svg>
             </div>
 
             <!-- Interaktivni gumbi za brzi odabir destinacije -->
@@ -1096,60 +1158,13 @@
         });
 
         /* =========================================================
-           5. INTERAKTIVNA LEAFLET.JS KARTA PUTOVANJA
+           5. INTERAKTIVNA KARTA PUTOVANJA (SVG + GUMBI + KARTICE)
         ========================================================= */
-        let travelMap;
-        let mapMarkers = {};
-
         function initTravelMap() {
-            // Centrirano na Europu/Mediteran da se lijepo vide sve lokacije od Mallorce do Istanbula
-            travelMap = L.map('travel-map', {
-                scrollWheelZoom: false
-            }).setView([42.5, 16.5], 4);
-
-            // Tamni CartoDB Dark Matter sloj
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap &copy; CARTO',
-                subdomains: 'abcd',
-                maxZoom: 18
-            }).addTo(travelMap);
-
-            const zagrebCoords = [45.8150, 15.9819];
             const btnContainer = document.getElementById('travel-buttons');
+            btnContainer.innerHTML = '';
 
             MAP_LOCATIONS.forEach(loc => {
-                // Isprekidana linija od Zagreba do svake destinacije (i Pule)
-                if (loc.id !== 'zagreb') {
-                    L.polyline([zagrebCoords, loc.coords], {
-                        color: loc.type === 'base' ? '#fbbf24' : '#f43f5e',
-                        weight: 2,
-                        opacity: 0.65,
-                        dashArray: '6, 8'
-                    }).addTo(travelMap);
-                }
-
-                // Prilagođeni pin marker (zlatni za baze, rozi za putovanja)
-                const pinBg = loc.type === 'base' ? 'bg-amber-400 text-slate-950' : 'bg-rose-500 text-white';
-                const customIcon = L.divIcon({
-                    className: '',
-                    html: `<div class="custom-pin w-8 h-8 ${pinBg}">${loc.emoji}</div>`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16],
-                    popupAnchor: [0, -16]
-                });
-
-                const marker = L.marker(loc.coords, { icon: customIcon }).addTo(travelMap);
-                marker.bindPopup(`
-                    <div class="text-center p-1">
-                        <div class="text-xs font-bold text-amber-300">${loc.badge}</div>
-                        <div class="font-bold text-sm text-white">${loc.name}</div>
-                    </div>
-                `);
-
-                marker.on('click', () => selectTravelLocation(loc.id, false));
-                mapMarkers[loc.id] = marker;
-
-                // Gumb ispod karte
                 const btn = document.createElement('button');
                 const baseStyle = loc.type === 'base'
                     ? 'border-amber-400/40 text-amber-200 hover:bg-amber-400/20'
@@ -1162,11 +1177,10 @@
                 btnContainer.appendChild(btn);
             });
 
-            // Početno odaberi Zagreb
             selectTravelLocation('zagreb', false);
         }
 
-        function selectTravelLocation(locId, flyToPin) {
+        function selectTravelLocation(locId) {
             const loc = MAP_LOCATIONS.find(l => l.id === locId);
             if (!loc) return;
 
@@ -1176,14 +1190,12 @@
             document.getElementById('travel-emoji').textContent = loc.emoji;
             document.getElementById('travel-img-hint').textContent = loc.photo;
 
-            // Pokušaj učitati sliku putovanja; ako ne postoji, onerror prikazuje emoji fallback
             const photoEl = document.getElementById('travel-photo');
             const fallbackEl = document.getElementById('travel-fallback');
             photoEl.classList.add('hidden');
             fallbackEl.classList.remove('hidden');
             photoEl.src = loc.photo;
 
-            // Označi aktivni gumb
             document.querySelectorAll('#travel-buttons button').forEach(b => {
                 b.classList.remove('ring-2', 'ring-amber-400', 'bg-slate-800');
             });
@@ -1191,13 +1203,7 @@
             if (activeBtn) {
                 activeBtn.classList.add('ring-2', 'ring-amber-400', 'bg-slate-800');
             }
-
-            if (flyToPin && travelMap && mapMarkers[locId]) {
-                travelMap.flyTo(loc.coords, 6, { duration: 1.2 });
-                mapMarkers[locId].openPopup();
-            }
         }
-
         /* =========================================================
            6. MATEMATIČKI DOKAZ LJUBAVI (MINI KVIZ)
         ========================================================= */
