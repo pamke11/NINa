@@ -1,724 +1,1391 @@
 <!DOCTYPE html>
-<html lang="hr">
+<html lang="hr" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>NINA 23.0 — Naša jednadžba</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NINčaa✨</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter, Space Grotesk & Caveat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet.js CSS za pravu interaktivnu kartu -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Leaflet.js & Canvas-Confetti CDN -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
-  <!-- Besplatna Leaflet karta (NE treba nikakav API ključ) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #070913;
+            --gold: #fbbf24;
+            --rose: #f43f5e;
+            --emerald: #10b981;
+        }
 
-  <style>
-    :root {
-      --bg: #0b0f19;
-      --card: rgba(23, 30, 50, 0.82);
-      --border: rgba(255, 255, 255, 0.12);
-      --primary: #f43f5e;
-      --gold: #fbbf24;
-      --green: #10b981;
-      --yellow: #eab308;
-      --gray: #334155;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body {
-      background: radial-gradient(circle at top right, #1e1b4b, #0b0f19 60%);
-      color: var(--text);
-      min-height: 100vh;
-      padding-bottom: 60px;
-      overflow-x: hidden;
-    }
-    .container { max-width: 680px; margin: 0 auto; padding: 20px 16px; }
-    header { text-align: center; padding: 28px 10px 20px; }
-    .badge {
-      display: inline-block; padding: 5px 14px; border-radius: 99px;
-      background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.4);
-      color: #fda4af; font-size: 0.85rem; font-weight: 600; margin-bottom: 12px;
-    }
-    h1 {
-      font-size: 2.05rem; line-height: 1.2;
-      background: linear-gradient(to right, #fff, #fda4af, #fbbf24);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      margin-bottom: 10px;
-    }
-    .subtitle { color: var(--muted); font-size: 0.96rem; line-height: 1.5; }
-    .card {
-      background: var(--card); backdrop-filter: blur(12px);
-      border: 1px solid var(--border); border-radius: 20px;
-      padding: 20px; margin-bottom: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-    }
-    h2 { font-size: 1.3rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-    .section-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 16px; line-height: 1.45; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            background-image: 
+                radial-gradient(circle at 12% 10%, rgba(244, 63, 94, 0.16) 0%, transparent 40%),
+                radial-gradient(circle at 88% 25%, rgba(168, 85, 247, 0.14) 0%, transparent 45%),
+                radial-gradient(circle at 20% 60%, rgba(251, 191, 36, 0.1) 0%, transparent 45%),
+                radial-gradient(circle at 80% 85%, rgba(16, 185, 129, 0.1) 0%, transparent 45%);
+            color: #f8fafc;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
 
-    /* Brojač */
-    .counter-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
-    .counter-box {
-      background: rgba(15, 23, 42, 0.75); border: 1px solid var(--border);
-      border-radius: 14px; padding: 12px 4px;
-    }
-    .counter-num { font-size: 1.5rem; font-weight: 800; color: var(--gold); }
-    .counter-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
 
-    /* Dokle */
-    .level-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-    .level-pill { background: rgba(251, 191, 36, 0.15); color: var(--gold); padding: 4px 12px; border-radius: 99px; font-size: 0.85rem; font-weight: 700; }
-    .hint-btn {
-      background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--text);
-      padding: 6px 12px; border-radius: 10px; font-size: 0.85rem; cursor: pointer;
-    }
-    .hint-box {
-      background: rgba(251, 191, 36, 0.1); border-left: 3px solid var(--gold);
-      padding: 10px 12px; border-radius: 8px; font-size: 0.9rem; color: #fde68a;
-      margin-bottom: 14px; display: none;
-    }
-    .board { display: flex; flex-direction: column; gap: 6px; align-items: center; margin: 14px 0; }
-    .row { display: flex; gap: 5px; }
-    .tile {
-      width: 42px; height: 42px; border: 2px solid #334155; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.25rem; font-weight: 800; text-transform: uppercase; transition: transform 0.2s, background 0.3s;
-    }
-    .tile.filled { border-color: #64748b; transform: scale(1.04); }
-    .tile.correct { background: var(--green); border-color: var(--green); color: #fff; }
-    .tile.present { background: var(--yellow); border-color: var(--yellow); color: #0f172a; }
-    .tile.absent { background: var(--gray); border-color: var(--gray); color: #94a3b8; }
+        .font-handwriting {
+            font-family: 'Caveat', cursive;
+        }
 
-    .keyboard { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
-    .kb-row { display: flex; justify-content: center; gap: 3px; }
-    .key {
-      background: #1e293b; color: #fff; border: none; border-radius: 6px;
-      padding: 12px 0; flex: 1; max-width: 36px; font-weight: 700; font-size: 0.82rem;
-      cursor: pointer; user-select: none; touch-action: manipulation;
-    }
-    .key.wide { max-width: 56px; font-size: 0.75rem; background: #334155; }
-    .key.correct { background: var(--green); }
-    .key.present { background: var(--yellow); color: #0f172a; }
-    .key.absent { background: #0f172a; color: #475569; }
+        /* Glassmorphism kartice */
+        .glass-card {
+            background: rgba(15, 21, 38, 0.68);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.65);
+        }
 
-    .story-reveal {
-      margin-top: 16px; padding: 16px; border-radius: 14px;
-      background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4);
-      display: none; text-align: center;
-    }
-    .story-reveal img {
-      width: 100%; max-height: 240px; object-fit: cover; border-radius: 12px; margin: 10px 0; display: none;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary), #e11d48); color: white;
-      border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700;
-      font-size: 0.95rem; cursor: pointer; margin-top: 10px; width: 100%;
-    }
+        .glass-badge {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+        }
 
-    /* Mapa */
-    #travel-map { height: 350px; width: 100%; border-radius: 14px; z-index: 1; border: 1px solid var(--border); }
-    .dest-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-    .dest-chip {
-      background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--text);
-      padding: 6px 12px; border-radius: 99px; font-size: 0.84rem; cursor: pointer;
-    }
-    .dest-chip:hover { border-color: var(--gold); color: var(--gold); }
-    .dest-card {
-      margin-top: 12px; padding: 14px; border-radius: 12px;
-      background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(251, 191, 36, 0.4); display: none;
-    }
-    .dest-card h3 { color: var(--gold); margin-bottom: 6px; font-size: 1.05rem; }
-    .dest-card img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 10px; margin-top: 8px; display: none; }
+        /* Plutajući matematički simboli u pozadini */
+        .math-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
 
-    /* Matematika */
-    .math-options { display: grid; gap: 8px; margin-top: 12px; }
-    .math-btn {
-      background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text);
-      padding: 12px; border-radius: 12px; text-align: left; cursor: pointer; font-size: 0.92rem;
-    }
-    .math-btn.right { background: rgba(16, 185, 129, 0.2); border-color: var(--green); }
-    .math-btn.wrong { background: rgba(244, 63, 94, 0.2); border-color: var(--primary); }
+        .math-symbol {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.045);
+            font-family: 'Space Grotesk', serif;
+            user-select: none;
+            animation: floatMath 20s infinite ease-in-out;
+        }
 
-    /* Grebalice */
-    .scratch-grid { display: grid; gap: 12px; }
-    .scratch-item {
-      position: relative; height: 74px; border-radius: 14px; overflow: hidden;
-      background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px dashed var(--gold);
-      display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px;
-      font-weight: 700; color: var(--gold);
-    }
-    .scratch-canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; touch-action: none; }
+        @keyframes floatMath {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-32px) rotate(14deg); }
+        }
 
-    /* Crtanje */
-    #draw-canvas {
-      width: 100%; height: 220px; background: #ffffff; border-radius: 14px;
-      touch-action: none; cursor: crosshair; display: block;
-    }
-    .draw-tools { display: flex; gap: 8px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
-    .color-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
+        /* Dokle pločice i animacije */
+        .tile {
+            transition: transform 0.35s ease, background-color 0.35s ease, border-color 0.35s ease;
+            transform-style: preserve-3d;
+        }
 
-    /* Završno pismo */
-    .letter-text { line-height: 1.7; font-size: 0.98rem; color: #e2e8f0; white-space: pre-line; }
-    .toast {
-      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-      background: #f8fafc; color: #0f172a; padding: 10px 18px; border-radius: 10px;
-      font-weight: 700; font-size: 0.9rem; z-index: 9999; display: none;
-    }
-  </style>
+        .tile-pop {
+            animation: popIn 0.14s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.84); }
+            70% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
+        .tile-flip {
+            animation: flipTile 0.55s ease forwards;
+        }
+
+        @keyframes flipTile {
+            0% { transform: rotateX(0deg); }
+            50% { transform: rotateX(90deg); }
+            100% { transform: rotateX(0deg); }
+        }
+
+        .tile-shake {
+            animation: shakeRow 0.45s ease-in-out;
+        }
+
+        @keyframes shakeRow {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .tile-bounce {
+            animation: bounceWin 0.6s ease;
+        }
+
+        @keyframes bounceWin {
+            0%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-12px); }
+            70% { transform: translateY(-4px); }
+        }
+
+        /* Stanja Dokle pločica i tipkovnice */
+        .state-correct {
+            background-color: #10b981 !important;
+            border-color: #10b981 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+        }
+
+        .state-present {
+            background-color: #f59e0b !important;
+            border-color: #f59e0b !important;
+            color: #ffffff !important;
+        }
+
+        .state-absent {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #64748b !important;
+        }
+
+        .key-btn {
+            touch-action: manipulation;
+            user-select: none;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+        }
+        .key-btn:active {
+            transform: scale(0.92);
+        }
+
+        /* Leaflet prilagodba za tamnu temu */
+        #travel-map {
+            z-index: 10;
+            background: #0b0f19;
+        }
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+            background: rgba(15, 23, 42, 0.95) !important;
+            color: #f8fafc !important;
+            border: 1px solid rgba(251, 191, 36, 0.35);
+            backdrop-filter: blur(8px);
+            border-radius: 12px !important;
+        }
+        .leaflet-container a.leaflet-popup-close-button {
+            color: #94a3b8 !important;
+        }
+        .custom-pin {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            font-size: 16px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+            border: 2px solid #ffffff;
+            transition: transform 0.2s ease;
+        }
+        .custom-pin:hover {
+            transform: scale(1.2);
+        }
+
+        /* Scratch-off (grebalice) */
+        .scratch-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1rem;
+            touch-action: none;
+        }
+        .scratch-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            z-index: 10;
+        }
+
+        /* Prilagođeni scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070913;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+    </style>
 </head>
-<body>
+<body class="antialiased selection:bg-rose-500/30 selection:text-rose-200">
 
-<div id="toast" class="toast"></div>
+    <!-- Plutajući matematički simboli -->
+    <div class="math-bg" id="math-bg" aria-hidden="true"></div>
 
-<div class="container">
-  <header>
-    <div class="badge">✨ VERZIJA 23.0 • SRETAN ROĐENDAN ✨</div>
-    <h1>Sretan 23. rođendan, Nina! ❤️</h1>
-    <p class="subtitle">Od klupa Opće gimnazije u Puli do našeg malog svijeta u Zagrebu — riješi igricu, istraži kartu i otključaj svoje poklone.</p>
-  </header>
-
-  <!-- 1. BROJAČ LJUBAVI -->
-  <section class="card">
-    <h2>⏳ Naša jednadžba u vremenu</h2>
-    <p class="section-desc">Svaka sekunda od 06.05.2023. u 23:59 kada je naša priča službeno počela:</p>
-    <div class="counter-grid">
-      <div class="counter-box"><div class="counter-num" id="c-days">0</div><div class="counter-label">Dana</div></div>
-      <div class="counter-box"><div class="counter-num" id="c-hours">00</div><div class="counter-label">Sati</div></div>
-      <div class="counter-box"><div class="counter-num" id="c-mins">00</div><div class="counter-label">Minuta</div></div>
-      <div class="counter-box"><div class="counter-num" id="c-secs">00</div><div class="counter-label">Sekundi</div></div>
-    </div>
-  </section>
-
-  <!-- 2. NININ DOKLE -->
-  <section class="card">
-    <h2>🟩 Ninin Dokle: Naša priča</h2>
-    <p class="section-desc">Pogodi 6 ključnih riječi koje opisuju naš put. Ako zapneš, klikni na žaruljicu za pomoć!</p>
-
-    <div class="level-bar">
-      <span class="level-pill" id="level-indicator">Razina 1 / 6</span>
-      <button class="hint-btn" onclick="toggleHint()">💡 Trebaš hint?</button>
+    <!-- Toast poruka (zamjena za alert) -->
+    <div id="toast-box" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300 transform -translate-y-4">
+        <div id="toast-text" class="bg-slate-900/95 border border-amber-400/50 text-amber-200 px-5 py-2.5 rounded-full text-sm font-medium shadow-2xl backdrop-blur-md text-center">
+            Obavijest
+        </div>
     </div>
 
-    <div class="hint-box" id="hint-box"></div>
-    <div class="board" id="board"></div>
-    <div class="keyboard" id="keyboard"></div>
+    <!-- Glavni spremnik -->
+    <main class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-14">
 
-    <div class="story-reveal" id="story-reveal">
-      <h3 id="story-title" style="color: #6ee7b7; margin-bottom: 6px;"></h3>
-      <p id="story-text" style="font-size: 0.94rem; line-height: 1.5;"></p>
-      <img id="story-img" src="" alt="Uspomena" />
-      <button class="btn-primary" id="next-level-btn" onclick="nextLevel()">Sljedeća razina ➡️</button>
-    </div>
-  </section>
+        <!-- =========================================================
+             1. HERO SEKCIJA & LIVE BROJAČ LJUBAVI
+        ========================================================= -->
+        <header class="text-center space-y-6 pt-2">
+            <div class="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-1.5 rounded-full glass-badge text-xs sm:text-sm font-medium text-amber-300">
+                <span>NINA 23.0</span>
+                <span class="text-slate-500">•</span>
+                <span>Pula &rarr; Zagreb</span>
+                <span class="text-slate-500">•</span>
+                <span>&pi; &bull; &infin; &bull; &sum; &bull; &hearts;</span>
+            </div>
 
-  <!-- 3. INTERAKTIVNA KARTA PUTOVANJA -->
-  <section class="card">
-    <h2>🌍 Naša karta uspomena</h2>
-    <p class="section-desc">Od Pule i Zagreba do svih naših putovanja — klikni na pin na karti ili gumb grada ispod:</p>
-    <div id="travel-map"></div>
-    <div class="dest-chips" id="dest-chips"></div>
-    <div class="dest-card" id="dest-card">
-      <h3 id="dest-title"></h3>
-      <p id="dest-desc" style="font-size: 0.92rem; color: #e2e8f0; line-height: 1.45;"></p>
-      <img id="dest-img" src="" alt="" />
-    </div>
-  </section>
+            <h1 class="font-display text-4xl sm:text-6xl font-bold tracking-tight bg-gradient-to-r from-amber-200 via-rose-300 to-purple-300 bg-clip-text text-transparent leading-tight">
+                Sretan 23. rođendan, Nina! ✨
+            </h1>
 
-  <!-- 4. MATEMATIČKI DOKAZ -->
-  <section class="card">
-    <h2>📐 Matematički dokaz ljubavi (PMF izdanje)</h2>
-    <p class="section-desc">Budući da buduća profesorica matematike mora provjeriti svaki teorem, odaberi točan rezultat za: <br><strong>lim (t → ∞) [ Naša sreća(t) ] = ?</strong></p>
-    <div class="math-options" id="math-options">
-      <button class="math-btn" onclick="checkMath(this, false)">A) 0 (Limes ne postoji kad preskočimo trening nogu)</button>
-      <button class="math-btn" onclick="checkMath(this, true)">B) +∞ (Raste strogo monotono sa svakom godinom)</button>
-      <button class="math-btn" onclick="checkMath(this, false)">C) π / 2 (Samo dok smo na Mallorci)</button>
-    </div>
-    <p id="math-feedback" style="margin-top: 10px; font-weight: 700; font-size: 0.92rem;"></p>
-  </section>
+            <p class="text-slate-300 text-base sm:text-xl max-w-2xl mx-auto font-light leading-relaxed">
+                Naša jednadžba: <span class="text-amber-300 font-medium">3,5 godine smijeha, treninga, putovanja i ljubavi</span>
+            </p>
 
-  <!-- 5. GREBALICE (KUPONI) -->
-  <section class="card">
-    <h2>🎟️ Rođendanske grebalice</h2>
-    <p class="section-desc">Ostruži prstom sivi sloj i otkrij svoje rođendanske vaučere:</p>
-    <div class="scratch-grid" id="scratch-grid"></div>
-  </section>
+            <!-- Live Brojač od početka veze -->
+            <div class="glass-card rounded-3xl p-5 sm:p-7 max-w-2xl mx-auto border-amber-400/20">
+                <p class="text-xs uppercase tracking-widest text-amber-300/80 font-semibold mb-4">
+                    Zajedno pišemo ovu priču već točno:
+                </p>
+                <div class="grid grid-cols-4 gap-2.5 sm:gap-4 text-center">
+                    <div class="bg-slate-950/70 rounded-2xl p-3 sm:p-4 border border-white/5">
+                        <div id="count-days" class="font-display text-2xl sm:text-4xl font-bold text-white">0000</div>
+                        <div class="text-[11px] sm:text-xs text-slate-400 uppercase tracking-wider mt-1">Dana</div>
+                    </div>
+                    <div class="bg-slate-950/70 rounded-2xl p-3 sm:p-4 border border-white/5">
+                        <div id="count-hours" class="font-display text-2xl sm:text-4xl font-bold text-rose-400">00</div>
+                        <div class="text-[11px] sm:text-xs text-slate-400 uppercase tracking-wider mt-1">Sati</div>
+                    </div>
+                    <div class="bg-slate-950/70 rounded-2xl p-3 sm:p-4 border border-white/5">
+                        <div id="count-mins" class="font-display text-2xl sm:text-4xl font-bold text-amber-300">00</div>
+                        <div class="text-[11px] sm:text-xs text-slate-400 uppercase tracking-wider mt-1">Minuta</div>
+                    </div>
+                    <div class="bg-slate-950/70 rounded-2xl p-3 sm:p-4 border border-white/5">
+                        <div id="count-secs" class="font-display text-2xl sm:text-4xl font-bold text-emerald-400">00</div>
+                        <div class="text-[11px] sm:text-xs text-slate-400 uppercase tracking-wider mt-1">Sekundi</div>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-  <!-- 6. KREATIVNI KUTAK -->
-  <section class="card">
-    <h2>🎨 Kreativni kutak za Ninu</h2>
-    <p class="section-desc">Nacrtaj nešto za svoj 23. rođendan (tortu, nas dvoje u teretani ili matematički graf) i spremi uspomenu:</p>
-    <canvas id="draw-canvas"></canvas>
-    <div class="draw-tools">
-      <div class="color-dot" style="background:#f43f5e" onclick="setBrush('#f43f5e')"></div>
-      <div class="color-dot" style="background:#3b82f6" onclick="setBrush('#3b82f6')"></div>
-      <div class="color-dot" style="background:#10b981" onclick="setBrush('#10b981')"></div>
-      <div class="color-dot" style="background:#f59e0b" onclick="setBrush('#f59e0b')"></div>
-      <div class="color-dot" style="background:#0f172a" onclick="setBrush('#0f172a')"></div>
-      <button class="hint-btn" onclick="clearCanvas()">🗑️ Obriši</button>
-      <button class="hint-btn" onclick="saveDrawing()">💾 Spremi sliku</button>
-    </div>
-  </section>
+        <!-- =========================================================
+             2. GLAVNA IGRA: 'NININ DOKLE' (6 RAZINA VAŠE PRIČE)
+        ========================================================= -->
+        <section id="dokle-section" class="glass-card rounded-3xl p-4 sm:p-8 space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-xs font-bold tracking-wider uppercase">Ninin Dokle</span>
+                        <span id="level-indicator" class="text-xs text-slate-400 font-medium">Razina 1 / 6</span>
+                    </div>
+                    <h2 class="font-display text-2xl font-bold text-white mt-1" id="level-title">Razina 1: Početak</h2>
+                </div>
 
-  <!-- 7. ZAVRŠNA ČESTITKA -->
-  <section class="card" style="border-color: rgba(244, 63, 94, 0.5);">
-    <h2>💌 Za tvoj 23. rođendan</h2>
-    <div class="letter-text">Draga Nina,
+                <!-- Gumbi za pomoć i preskakanje -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="showHint()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/30 text-amber-300 text-xs sm:text-sm font-medium transition cursor-pointer">
+                        <span>💡</span>
+                        <span>Trebaš mali hint?</span>
+                    </button>
+                    <button onclick="revealCurrentWord()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-white/10 text-slate-300 text-xs sm:text-sm font-medium transition cursor-pointer">
+                        <span>🔓</span>
+                        <span>Preskoči / Otkrij riječ</span>
+                    </button>
+                </div>
+            </div>
 
-Sretan ti 23. rođendan! ❤️
+            <!-- Navigacijske pilule za 6 razina -->
+            <div class="flex items-center justify-center gap-2 flex-wrap" id="level-pills"></div>
 
-Kada pogledam unazad — od prvih pogleda u Općoj gimnaziji u Puli, preko 5. paviljona na Savi, mijenjanja fakulteta, zajedničkih treninga u Gyms4You, pa sve do svih gradova koje smo obišli i našeg doma u Motovunskoj 4 — ne mogu zamisliti bolju suputnicu od tebe.
+            <!-- Prikaz Hint-a -->
+            <div id="hint-box" class="hidden bg-amber-500/10 border border-amber-400/30 rounded-2xl p-3.5 text-sm text-amber-200 text-center"></div>
 
-Obožavam tvoj osmijeh, tvoju energiju, strpljenje i toplinu s kojom pristupaš svemu što radiš (i znam da ćeš biti najbolja profesorica matematike ikad!). Hvala ti za svaku foru, svaki zajednički trening i svaku od ove tri i pol godine.
+            <!-- Mreža slova (Dokle Grid) -->
+            <div class="flex flex-col items-center justify-center py-2">
+                <div id="dokle-board" class="grid gap-1.5 sm:gap-2"></div>
+            </div>
 
-Neka ti 23. bude najljepša, najuspješnija i najzabavnija godina do sada — a ja sam tu da slavimo svaki tvoj korak.
+            <!-- Hrvatska virtualna tipkovnica -->
+            <div id="dokle-keyboard" class="space-y-1.5 sm:space-y-2 max-w-xl mx-auto pt-1 select-none"></div>
 
-Volim te najviše! ❤️</div>
-    <button class="btn-primary" onclick="launchConfetti()">🎉 Proslavi s konfetima! 🎉</button>
-  </section>
-</div>
+            <!-- Kronološka vremenska lenta (Timeline) otključanih poglavlja -->
+            <div class="pt-6 border-t border-white/10 space-y-5">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-display text-lg sm:text-xl font-bold text-rose-300 flex items-center gap-2">
+                        <span>🕰️</span> Vremenska lenta naše priče (<span id="unlocked-count">0</span>/6 otključano)
+                    </h3>
+                </div>
 
-<script>
-  // 1. TOČAN DATUM POČETKA VEZE: 06.05.2023. u 23:59:00
-  const ANNIVERSARY_DATE = new Date('2023-05-06T23:59:00');
+                <div id="timeline-empty" class="text-center py-6 px-4 rounded-2xl bg-slate-950/50 border border-dashed border-white/10 text-sm text-slate-400">
+                    Pogodi prvu riječ iznad da otključaš prvo poglavlje naše vremenske lente! ✨
+                </div>
 
-  function updateCounter() {
-    const now = new Date();
-    const diff = Math.max(0, now - ANNIVERSARY_DATE);
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const mins = Math.floor((diff / (1000 * 60)) % 60);
-    const secs = Math.floor((diff / 1000) % 60);
+                <!-- Kronološki Timeline kontejner -->
+                <div id="memories-timeline" class="relative pl-6 sm:pl-8 border-l-2 border-rose-500/30 space-y-6 hidden">
+                    <!-- Dinamički dodane otključane kartice -->
+                </div>
+            </div>
+        </section>
 
-    document.getElementById('c-days').textContent = days;
-    document.getElementById('c-hours').textContent = String(hours).padStart(2, '0');
-    document.getElementById('c-mins').textContent = String(mins).padStart(2, '0');
-    document.getElementById('c-secs').textContent = String(secs).padStart(2, '0');
-  }
-  setInterval(updateCounter, 1000);
-  updateCounter();
+        <!-- =========================================================
+             3. INTERAKTIVNA KARTA PUTOVANJA (LEAFLET.JS)
+        ========================================================= -->
+        <section class="glass-card rounded-3xl p-4 sm:p-8 space-y-6">
+            <div class="text-center space-y-2">
+                <span class="px-3 py-1 rounded-full bg-rose-500/15 text-rose-300 text-xs font-semibold tracking-wider uppercase">Naša mapa svijeta</span>
+                <h2 class="font-display text-2xl sm:text-3xl font-bold text-white">Od Pule i Zagreba do 7 destinacija 🌍</h2>
+                <p class="text-sm text-slate-400 max-w-xl mx-auto">
+                    Klikni na bilo koji pin na karti ili gumb ispod kako bi istražila naše baze i zajednička putovanja:
+                </p>
+            </div>
 
-  // 2. NININ DOKLE (6 RAZINA)
-  const LEVELS = [
-    {
-      word: "PULA",
-      hint: "Grad gdje je sve počelo — klupe Opće gimnazije i prve iskre.",
-      title: "Poglavlje 1: Pula — Gdje je sve počelo",
-      story: "Sve je krenulo u Puli u klupama Opće gimnazije. Tada još nismo ni znali kakva nas zajednička avantura čeka!",
-      img: "slika1.jpg"
-    },
-    {
-      word: "ZAGREB",
-      hint: "Grad koji nas je stvarno spojio — 5. paviljon na Savi, FSB i Geodezija.",
-      title: "Poglavlje 2: Zagreb i 5. paviljon",
-      story: "Dvoje Puležana u Zagrebu! 5. paviljon na Savi, tvoji dani na FSB-u i moji na Geodeziji — tu smo postali nerazdvojni.",
-      img: "slika2.jpg"
-    },
-    {
-      word: "MATIKA",
-      hint: "Nakon dvije godine oboje mijenjamo smjer: TVZ informatika i tvoja najveća ljubav na PMF-u.",
-      title: "Poglavlje 3: PMF Matematika & TVZ",
-      story: "Dva hrabra zaokreta — ti na nastavnički smjer matematike na PMF-u, ja na informatiku na TVZ-u. Evo nas već na trećoj godini!",
-      img: "slika3.jpg"
-    },
-    {
-      word: "MATRIX",
-      hint: "Od Clever Fita do našeg drugog doma u Gyms4You — mjesto gdje zajedno dižemo rekorde.",
-      title: "Poglavlje 4: Naš gym ritual",
-      story: "Od Clever Fita pa sve do Gyms4You Matrixa — nema boljeg sparing partnera za trening i smijeh između serija od tebe.",
-      img: "slika4.jpg"
-    },
-    {
-      word: "PUTEVI",
-      hint: "Ljubljana, Beograd, Malta, Grčka, Istanbul, Budimpešta i Mallorca — naših 7 nezaboravnih destinacija.",
-      title: "Poglavlje 5: Svijet pod našim nogama",
-      story: "Sedam nevjerojatnih destinacija iza nas, a još cijeli svijet ispred nas!",
-      img: "slika5.jpg"
-    },
-    {
-      word: "MOTOVUN",
-      hint: "Komadić Istre u zagrebačkom Vukomercu — naša baza na broju 4.",
-      title: "Poglavlje 6: Motovunska 4 — Naš dom",
-      story: "Istra u srcu Zagreba! Naš zajednički kutak na Vukomercu gdje stvaramo najljepše uspomene svaki dan.",
-      img: "slika6.jpg"
-    }
-  ];
+            <!-- Legenda karte -->
+            <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-300">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-amber-400 border border-white inline-block"></span>
+                    <span>Naše baze (Pula & Zagreb)</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-rose-500 border border-white inline-block"></span>
+                    <span>7 zajedničkih putovanja</span>
+                </div>
+            </div>
 
-  const KB_ROWS = [
-    ["Q","W","E","R","T","Z","U","I","O","P","Š","Đ"],
-    ["A","S","D","F","G","H","J","K","L","Č","Ć","Ž"],
-    ["ENTER","Y","X","C","V","B","N","M","⌫"]
-  ];
+            <!-- Prava Leaflet Karta -->
+            <div class="w-full h-80 sm:h-96 rounded-2xl overflow-hidden border border-white/15 shadow-inner relative">
+                <div id="travel-map" class="w-full h-full"></div>
+            </div>
 
-  let currentLevel = 0;
-  let currentRow = 0;
-  let currentGuess = "";
-  let gameOver = false;
-  const MAX_ROWS = 6;
+            <!-- Interaktivni gumbi za brzi odabir destinacije -->
+            <div class="flex flex-wrap justify-center gap-2" id="travel-buttons"></div>
 
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.display = 'block';
-    setTimeout(() => { t.style.display = 'none'; }, 2200);
-  }
+            <!-- Kartica detalja odabrane lokacije + mjesto za fotku -->
+            <div id="travel-detail-card" class="bg-slate-950/75 border border-amber-400/25 rounded-2xl p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center transition-all">
+                <!-- Slika putovanja s fallback ikonom -->
+                <div class="h-40 sm:h-36 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 overflow-hidden flex items-center justify-center relative">
+                    <img id="travel-photo" src="" alt="Uspomena s putovanja" class="w-full h-full object-cover hidden" onload="this.classList.remove('hidden'); this.nextElementSibling.classList.add('hidden');" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                    <div id="travel-fallback" class="flex flex-col items-center justify-center text-center p-3">
+                        <span id="travel-emoji" class="text-4xl mb-1">🏡</span>
+                        <span id="travel-img-hint" class="text-[10px] text-slate-400">putovanje_zagreb.jpg</span>
+                    </div>
+                </div>
 
-  function toggleHint() {
-    const box = document.getElementById('hint-box');
-    box.style.display = box.style.display === 'block' ? 'none' : 'block';
-  }
+                <!-- Tekstualni opis lokacije -->
+                <div class="sm:col-span-2 space-y-2 text-center sm:text-left">
+                    <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/10 text-xs font-semibold text-amber-300" id="travel-badge">
+                        Naša baza
+                    </div>
+                    <h3 class="font-display text-xl sm:text-2xl font-bold text-white" id="travel-title">Zagreb — 5. paviljon & Motovunska 4</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed" id="travel-desc">
+                        Grad koji nas je spojio u 5. paviljonu na Savi, gdje studiramo PMF i TVZ, treniramo u Matrixu i gradimo naš dom u Vukomercu.
+                    </p>
+                </div>
+            </div>
+        </section>
 
-  function initLevel() {
-    const lvl = LEVELS[currentLevel];
-    currentRow = 0;
-    currentGuess = "";
-    gameOver = false;
+        <!-- =========================================================
+             4. MATEMATIČKI DOKAZ LJUBAVI & 3 DIGITALNE GREBALICE
+        ========================================================= -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Matematički mini-kviz -->
+            <div class="glass-card rounded-3xl p-6 flex flex-col justify-between space-y-5">
+                <div class="space-y-3">
+                    <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-semibold">PMF Matematika Izazov &sum;</span>
+                    <h3 class="font-display text-xl font-bold text-white">Matematički dokaz ljubavi</h3>
+                    <p class="text-xs sm:text-sm text-slate-300">Izračunaj limes naše sreće:</p>
+                    <div class="bg-slate-950/80 border border-amber-400/25 rounded-2xl p-4 text-center font-display text-sm sm:text-base text-amber-300 overflow-x-auto">
+                        lim<sub>t &rarr; &infin;</sub> <span class="text-white">[Smijeh(t) + Trening(t) + Putovanja(t)]</span> / <span class="text-rose-300">Brige(t)</span>
+                    </div>
+                </div>
 
-    document.getElementById('level-indicator').textContent = `Razina ${currentLevel + 1} / ${LEVELS.length} (${lvl.word.length} slova)`;
-    document.getElementById('hint-box').textContent = "💡 " + lvl.hint;
-    document.getElementById('hint-box').style.display = 'none';
-    document.getElementById('story-reveal').style.display = 'none';
+                <div class="space-y-2.5" id="math-options">
+                    <button onclick="checkMathAnswer(0)" class="w-full text-left p-3.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 hover:border-emerald-400/40 text-sm text-slate-200 transition flex items-center justify-between cursor-pointer">
+                        <span>A) Beskonačno (&infin;) i svakim danom sve veće!</span>
+                        <span>🚀</span>
+                    </button>
+                    <button onclick="checkMathAnswer(1)" class="w-full text-left p-3.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 hover:border-amber-400/40 text-sm text-slate-200 transition flex items-center justify-between cursor-pointer">
+                        <span>B) 42</span>
+                        <span>🌌</span>
+                    </button>
+                    <button onclick="checkMathAnswer(2)" class="w-full text-left p-3.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 hover:border-rose-400/40 text-sm text-slate-200 transition flex items-center justify-between cursor-pointer">
+                        <span>C) Neodređeni oblik 0/0</span>
+                        <span>🧮</span>
+                    </button>
+                </div>
 
-    const board = document.getElementById('board');
-    board.innerHTML = "";
-    for (let r = 0; r < MAX_ROWS; r++) {
-      const row = document.createElement('div');
-      row.className = 'row';
-      for (let c = 0; c < lvl.word.length; c++) {
-        const tile = document.createElement('div');
-        tile.className = 'tile';
-        tile.id = `tile-${r}-${c}`;
-        row.appendChild(tile);
-      }
-      board.appendChild(row);
-    }
+                <div id="math-feedback" class="hidden text-sm p-3.5 rounded-xl border leading-relaxed"></div>
+            </div>
 
-    const kb = document.getElementById('keyboard');
-    kb.innerHTML = "";
-    KB_ROWS.forEach(keys => {
-      const rDiv = document.createElement('div');
-      rDiv.className = 'kb-row';
-      keys.forEach(k => {
-        const btn = document.createElement('button');
-        btn.className = 'key' + (k.length > 1 ? ' wide' : '');
-        btn.textContent = k;
-        btn.id = `key-${k}`;
-        btn.onclick = () => handleKey(k);
-        rDiv.appendChild(btn);
-      });
-      kb.appendChild(rDiv);
-    });
-  }
+            <!-- 3 Digitalne Grebalice (Scratch-off kuponi) -->
+            <div class="glass-card rounded-3xl p-6 space-y-4">
+                <div>
+                    <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold">Rođendanski kuponi 🎟️</span>
+                    <h3 class="font-display text-xl font-bold text-white mt-2">Ostruži prstom za nagrade!</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Povuci prstom ili mišem preko zlatnog sloja na svakoj kartici:</p>
+                </div>
 
-  function handleKey(k) {
-    if (gameOver) return;
-    const targetLen = LEVELS[currentLevel].word.length;
+                <div class="space-y-3">
+                    <!-- Kupon 1 -->
+                    <div class="scratch-container h-20 bg-gradient-to-r from-rose-950/90 to-slate-900 border border-rose-500/30 flex items-center justify-center px-4 text-center">
+                        <div class="text-xs sm:text-sm font-semibold text-rose-200">
+                            🏋️‍♀️ 1x Preskakanje <span class="text-amber-300">leg daya</span> bez ikakvog prigovora (vrijedi odmah!)
+                        </div>
+                        <canvas class="scratch-canvas" data-label="OSTRUŽI KUPON #1"></canvas>
+                    </div>
 
-    if (k === "⌫") {
-      if (currentGuess.length > 0) {
-        currentGuess = currentGuess.slice(0, -1);
-        updateBoardRow();
-      }
-      return;
-    }
-    if (k === "ENTER") {
-      if (currentGuess.length < targetLen) {
-        showToast("Upiši sva slova!");
-        return;
-      }
-      submitGuess();
-      return;
-    }
-    if (currentGuess.length < targetLen) {
-      currentGuess += k;
-      updateBoardRow();
-    }
-  }
+                    <!-- Kupon 2 -->
+                    <div class="scratch-container h-20 bg-gradient-to-r from-amber-950/90 to-slate-900 border border-amber-500/30 flex items-center justify-center px-4 text-center">
+                        <div class="text-xs sm:text-sm font-semibold text-amber-200">
+                            💆‍♀️ 1x Masaža leđa nakon faksa i doručak u krevet u Motovunskoj 4
+                        </div>
+                        <canvas class="scratch-canvas" data-label="OSTRUŽI KUPON #2"></canvas>
+                    </div>
 
-  function updateBoardRow() {
-    const targetLen = LEVELS[currentLevel].word.length;
-    for (let c = 0; c < targetLen; c++) {
-      const tile = document.getElementById(`tile-${currentRow}-${c}`);
-      tile.textContent = currentGuess[c] || "";
-      tile.classList.toggle('filled', !!currentGuess[c]);
-    }
-  }
+                    <!-- Kupon 3 -->
+                    <div class="scratch-container h-20 bg-gradient-to-r from-emerald-950/90 to-slate-900 border border-emerald-500/30 flex items-center justify-center px-4 text-center">
+                        <div class="text-xs sm:text-sm font-semibold text-emerald-200">
+                            🍷 1x Večera i spoj po tvom izboru — ti biraš sve!
+                        </div>
+                        <canvas class="scratch-canvas" data-label="OSTRUŽI KUPON #3"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-  function submitGuess() {
-    const target = LEVELS[currentLevel].word;
-    const targetLen = target.length;
-    const result = Array(targetLen).fill('absent');
-    const targetChars = target.split('');
-    const guessChars = currentGuess.split('');
+        <!-- =========================================================
+             5. KREATIVNI KUTAK (DIGITALNI BLOK ZA CRTANJE)
+        ========================================================= -->
+        <section class="glass-card rounded-3xl p-5 sm:p-8 space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <span class="px-3 py-1 rounded-full bg-pink-500/20 text-pink-300 text-xs font-semibold">Kreativni kutak 🎨</span>
+                    <h2 class="font-display text-2xl font-bold text-white mt-1.5">Ninin digitalni blok za crtanje</h2>
+                    <p class="text-sm text-slate-400">Nacrtaj rođendansku tortu, nas dvoje ili neku svoju ideju i spremi sliku za uspomenu!</p>
+                </div>
 
-    for (let i = 0; i < targetLen; i++) {
-      if (guessChars[i] === targetChars[i]) {
-        result[i] = 'correct';
-        targetChars[i] = null;
-      }
-    }
-    for (let i = 0; i < targetLen; i++) {
-      if (result[i] !== 'correct' && targetChars.includes(guessChars[i])) {
-        result[i] = 'present';
-        targetChars[targetChars.indexOf(guessChars[i])] = null;
-      }
-    }
+                <div class="flex items-center gap-2">
+                    <button onclick="clearDrawing()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-white/10 transition cursor-pointer">
+                        🗑️ Očisti
+                    </button>
+                    <button onclick="downloadDrawing()" class="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold shadow-lg shadow-rose-500/25 transition cursor-pointer">
+                        💾 Spremi crtež
+                    </button>
+                </div>
+            </div>
 
-    for (let i = 0; i < targetLen; i++) {
-      const tile = document.getElementById(`tile-${currentRow}-${i}`);
-      tile.classList.add(result[i]);
-      const keyBtn = document.getElementById(`key-${guessChars[i]}`);
-      if (keyBtn) {
-        if (result[i] === 'correct') keyBtn.className = 'key correct';
-        else if (result[i] === 'present' && !keyBtn.classList.contains('correct')) keyBtn.className = 'key present';
-        else if (!keyBtn.classList.contains('correct') && !keyBtn.classList.contains('present')) keyBtn.className = 'key absent';
-      }
-    }
+            <!-- Alati za crtanje: 6 boja, gumica i debljina kista -->
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-950/70 p-3.5 rounded-2xl border border-white/10">
+                <div class="flex items-center gap-2.5 flex-wrap" id="color-palette">
+                    <button onclick="selectTool('#f43f5e', false, this)" class="tool-btn w-7 h-7 rounded-full bg-rose-500 ring-2 ring-white scale-110 transition cursor-pointer" title="Roza"></button>
+                    <button onclick="selectTool('#fbbf24', false, this)" class="tool-btn w-7 h-7 rounded-full bg-amber-400 transition cursor-pointer" title="Zlatna"></button>
+                    <button onclick="selectTool('#10b981', false, this)" class="tool-btn w-7 h-7 rounded-full bg-emerald-500 transition cursor-pointer" title="Smaragdna"></button>
+                    <button onclick="selectTool('#38bdf8', false, this)" class="tool-btn w-7 h-7 rounded-full bg-sky-400 transition cursor-pointer" title="Nebesko plava"></button>
+                    <button onclick="selectTool('#c084fc', false, this)" class="tool-btn w-7 h-7 rounded-full bg-purple-400 transition cursor-pointer" title="Ljubičasta"></button>
+                    <button onclick="selectTool('#ffffff', false, this)" class="tool-btn w-7 h-7 rounded-full bg-white transition cursor-pointer" title="Bijela"></button>
+                    
+                    <span class="h-5 w-px bg-white/15 mx-1"></span>
+                    
+                    <!-- Gumica -->
+                    <button onclick="selectTool('#030712', true, this)" class="tool-btn px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-white/10 transition cursor-pointer">
+                        🧽 Gumica
+                    </button>
+                </div>
 
-    if (currentGuess === target) {
-      gameOver = true;
-      launchConfetti();
-      revealLevelStory();
-      return;
-    }
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                    <span>Debljina kista:</span>
+                    <input type="range" id="brush-size" min="2" max="24" value="5" class="accent-rose-500 cursor-pointer">
+                </div>
+            </div>
 
-    currentRow++;
-    currentGuess = "";
+            <!-- Canvas za crtanje -->
+            <div class="w-full h-64 sm:h-80 rounded-2xl overflow-hidden border border-white/15 bg-gray-950 relative">
+                <canvas id="drawing-canvas" class="w-full h-full block touch-none cursor-crosshair"></canvas>
+            </div>
+        </section>
 
-    if (currentRow >= MAX_ROWS) {
-      gameOver = true;
-      showToast(`Riječ je bila: ${target} ❤️`);
-      revealLevelStory();
-    }
-  }
+        <!-- =========================================================
+             6. ZAVRŠNO ROĐENDANSKO PISMO + KONFETI
+        ========================================================= -->
+        <section class="pb-12">
+            <div id="letter-closed" class="glass-card rounded-3xl p-8 sm:p-10 text-center space-y-5 border-rose-400/30">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 flex items-center justify-center text-3xl shadow-xl shadow-rose-500/20">
+                    💌
+                </div>
+                <div class="space-y-2 max-w-lg mx-auto">
+                    <h2 class="font-display text-2xl sm:text-3xl font-bold text-white">Spreman je završni dio...</h2>
+                    <p class="text-sm text-slate-300">
+                        Klikni na gumb ispod kako bi otvorila svoju završnu rođendansku čestitku za 23. rođendan!
+                    </p>
+                </div>
+                <button onclick="openBirthdayLetter()" class="inline-flex items-center gap-2.5 px-7 py-4 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-extrabold text-base shadow-xl shadow-rose-500/25 transform hover:-translate-y-0.5 transition cursor-pointer">
+                    <span>🎉 Otvori završnu rođendansku čestitku</span>
+                </button>
+            </div>
 
-  function revealLevelStory() {
-    const lvl = LEVELS[currentLevel];
-    const box = document.getElementById('story-reveal');
-    document.getElementById('story-title').textContent = lvl.title;
-    document.getElementById('story-text').textContent = lvl.story;
+            <!-- Otvoreno pismo -->
+            <div id="letter-opened" class="hidden glass-card rounded-3xl p-6 sm:p-10 space-y-6 border-amber-400/40 relative">
+                <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                    <span class="text-xs uppercase tracking-widest text-amber-300 font-semibold">Za Ninu • 23. rođendan ✨</span>
+                    <button onclick="fireConfetti()" class="text-xs px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer">
+                        🎊 Ispali još konfeta!
+                    </button>
+                </div>
 
-    const img = document.getElementById('story-img');
-    img.style.display = 'none';
-    img.src = lvl.img;
-    img.onload = () => { img.style.display = 'block'; };
-    img.onerror = () => { img.style.display = 'none'; };
+                <!-- =========================================================
+                     TEKST ZAVRŠNOG PISMA (SLOBODNO UREDI ILI DOPUNI PO ŽELJI)
+                ========================================================= -->
+                <div class="space-y-4 text-slate-200 leading-relaxed text-base sm:text-lg">
+                    <p class="font-handwriting text-3xl sm:text-4xl text-amber-300">
+                        Sretan ti 23. rođendan, ljubavi! ❤️
+                    </p>
+                    <p>
+                        Kad pogledam sve što smo prošli u ove tri i pol godine — od naših dana u Puli i gimnazijskih klupa, preko 5. paviljona na Savi gdje se naša priča stvarno spojila, pa sve do našeg današnjeg doma u Zagrebu — shvatim koliko sam sretan što te imam uz sebe.
+                    </p>
+                    <p>
+                        Obožavam tvoj zarazan smijeh, tvoje fore, tvoju kreativnost i toplinu koju nosiš u sebi. Znam da ćeš jednog dana biti najbolja profesorica matematike ikad, jer djeca s tobom neće učiti samo brojeve i formule, nego i kako biti nasmijan, dobar i znatiželjan čovjek.
+                    </p>
+                    <p>
+                        Hvala ti što si moj najbolji trening partner u teretani, najdraži suputnik na svim našim putovanjima i osoba koja svaki moj dan čini ljepšim. Jedva čekam sve nove gradove, nove uspjehe i sve godine koje su pred nama.
+                    </p>
+                    <p class="font-handwriting text-3xl text-rose-300 pt-2">
+                        Volim te najviše na svijetu! Sretan 23.! 🥂✨
+                    </p>
+                </div>
+            </div>
+        </section>
 
-    const nextBtn = document.getElementById('next-level-btn');
-    if (currentLevel < LEVELS.length - 1) {
-      nextBtn.style.display = 'block';
-      nextBtn.textContent = `Otključaj razinu ${currentLevel + 2} ➡️`;
-    } else {
-      nextBtn.style.display = 'none';
-      showToast("🎉 Osvojila si sve razine!");
-    }
-    box.style.display = 'block';
-  }
+    </main>
 
-  function nextLevel() {
-    if (currentLevel < LEVELS.length - 1) {
-      currentLevel++;
-      initLevel();
-    }
-  }
+    <!-- =========================================================
+         JAVASCRIPT LOGIKA APLIKACIJE
+    ========================================================= -->
+    <script>
+        /* =========================================================
+           1. KONFIGURACIJA (PRILAGODI DATUM POČETKA VEZE AKO ŽELIŠ)
+        ========================================================= */
+        const ANNIVERSARY_DATE = new Date('2023-05-06T23:59:00');
 
-  document.addEventListener('keydown', (e) => {
-    const k = e.key.toUpperCase();
-    if (k === "BACKSPACE") handleKey("⌫");
-    else if (k === "ENTER") handleKey("ENTER");
-    else if (/^[A-ZČĆĐŠŽ]$/.test(k)) handleKey(k);
-  });
+        // 6 Razina za 'NININ DOKLE'
+        const DOKLE_LEVELS = [
+            {
+                word: 'PULA',
+                title: 'Razina 1: Gdje je sve počelo',
+                hint: 'Grad gdje je sve počelo — klupe Opće gimnazije i prve iskre.',
+                storyTitle: '1. Pula — Opća gimnazija 🏛️',
+                storyText: 'Opća gimnazija u Puli. Tamo gdje je sve počelo, između školskih klupa, prvih pogleda i smijeha.',
+                image: 'slika1.jpg',
+                fallbackEmoji: '🏛️'
+            },
+            {
+                word: 'ZAGREB',
+                title: 'Razina 2: Studentski dani na Savi',
+                hint: 'Grad koji nas je stvarno spojio — 5. paviljon na Savi, FSB i Geodezija.',
+                storyTitle: '2. Zagreb — 5. paviljon na Savi 🎓',
+                storyText: 'Studentski dom Stjepan Radić, 5. paviljon! Ti na FSB-u (strojarstvo), ja na Geodeziji — tu smo postali nerazdvojni.',
+                image: 'slika2.jpg',
+                fallbackEmoji: '🏢'
+            },
+            {
+                word: 'MATIKA',
+                title: 'Razina 3: Pravi smjer',
+                hint: 'Nakon dvije godine oboje mijenjamo smjer: TVZ informatika i tvoja ljubav prema brojevima na PMF-u.',
+                storyTitle: '3. PMF Matematika & TVZ Informatika 📐',
+                storyText: 'Novi početak: ti na PMF-u (nastavnički smjer matematike — buduća najbolja profesorica!), a ja na TVZ informatici. Evo nas već na 3. godini!',
+                image: 'slika3.jpg',
+                fallbackEmoji: '📐'
+            },
+            {
+                word: 'MATRIX',
+                title: 'Razina 4: Zajednički treninzi',
+                hint: 'Od Clever Fita do našeg drugog doma u Gyms4You — mjesto gdje zajedno dižemo rekorde.',
+                storyTitle: '4. Gyms4You Matrix 💪',
+                storyText: 'Od prvih treninga u Clever Fitu do našeg Gyms4You Matrixa. Najbolji sparing partner i motivacija u teretani!',
+                image: 'slika4.jpg',
+                fallbackEmoji: '🏋️‍♀️'
+            },
+            {
+                word: 'PUTEVI',
+                title: 'Razina 5: Naše avanture',
+                hint: 'Ljubljana, Beograd, Malta, Grčka, Istanbul, Budimpešta i Mallorca — naših 7 nezaboravnih avantura.',
+                storyTitle: '5. Naših 7 putovanja ✈️',
+                storyText: '7 destinacija i bezbroj uspomena! Od balkanskih metropola do mediteranskih otoka i Istanbula.',
+                image: 'slika5.jpg',
+                fallbackEmoji: '🌍'
+            },
+            {
+                word: 'MOTOVUN',
+                title: 'Razina 6: Naš dom',
+                hint: 'Komadić Istre u zagrebačkom Vukomercu — naša baza na broju 4.',
+                storyTitle: '6. Vukomerec, Motovunska 4 🏡',
+                storyText: 'Vukomerec, Motovunska 4! Kako simbolično da smo i u Zagrebu pronašli svoju malu Istru i stvorili naš dom.',
+                image: 'slika6.jpg',
+                fallbackEmoji: '🏡'
+            }
+        ];
 
-  initLevel();
+        // Lokacije za Leaflet kartu (2 domaće baze + 7 putovanja)
+        const MAP_LOCATIONS = [
+            {
+                id: 'pula',
+                name: 'Pula',
+                badge: 'Rodni grad & Početak',
+                type: 'base',
+                coords: [44.8666, 13.8496],
+                emoji: '🏛️',
+                photo: 'putovanje_pula.jpg',
+                title: 'Pula — Naša Istra & Opća gimnazija',
+                desc: 'Rodni grad, Arena, more i klupe Opće gimnazije u kojima je naša priča dobila prve retke.'
+            },
+            {
+                id: 'zagreb',
+                name: 'Zagreb',
+                badge: 'Naša baza',
+                type: 'base',
+                coords: [45.8150, 15.9819],
+                emoji: '🏡',
+                photo: 'putovanje_zagreb.jpg',
+                title: 'Zagreb — 5. paviljon Sava & Motovunska 4',
+                desc: 'Mjesto gdje smo se spojili na Savi, zajedno treniramo u Matrixu i živimo u našem domu u Vukomercu.'
+            },
+            {
+                id: 'ljubljana',
+                name: 'Ljubljana',
+                badge: 'Putovanje #1',
+                type: 'trip',
+                coords: [46.0569, 14.5058],
+                emoji: '🇸🇮',
+                photo: 'putovanje_ljubljana.jpg',
+                title: 'Ljubljana — Šetnja uz Ljubljanicu',
+                desc: 'Naš prvi zajednički bijeg preko granice, Tromostovje, dvorac i savršen vikend u dvoje.'
+            },
+            {
+                id: 'beograd',
+                name: 'Beograd',
+                badge: 'Putovanje #2',
+                type: 'trip',
+                coords: [44.7866, 20.4489],
+                emoji: '🇷🇸',
+                photo: 'putovanje_beograd.jpg',
+                title: 'Beograd — Kalemegdan & dobra hrana',
+                desc: 'Pogled na ušće Save u Dunav, smijeh na svakom koraku i nezaboravna gradska atmosfera.'
+            },
+            {
+                id: 'malta',
+                name: 'Malta',
+                badge: 'Putovanje #3',
+                type: 'trip',
+                coords: [35.9375, 14.3754],
+                emoji: '🇲🇹',
+                photo: 'putovanje_malta.jpg',
+                title: 'Malta — Mediteranski dragulj',
+                desc: 'Valletta, tirkizno more, zlatne stijene i istraživanje otoka od jutra do mraka.'
+            },
+            {
+                id: 'grcka',
+                name: 'Grčka',
+                badge: 'Putovanje #4',
+                type: 'trip',
+                coords: [37.9838, 23.7275],
+                emoji: '🇬🇷',
+                photo: 'putovanje_grcka.jpg',
+                title: 'Grčka — Sunce, povijest i more',
+                desc: 'Antičke priče, najbolji giros, plavo nebo i trenuci za pamćenje.'
+            },
+            {
+                id: 'istanbul',
+                name: 'Istanbul',
+                badge: 'Putovanje #5',
+                type: 'trip',
+                coords: [41.0082, 28.9784],
+                emoji: '🇹🇷',
+                photo: 'putovanje_istanbul.jpg',
+                title: 'Istanbul — Grad na dva kontinenta',
+                desc: 'Miris začina, turski čaj, baklave i čaroban pogled na Bospor u sumrak.'
+            },
+            {
+                id: 'budimpesta',
+                name: 'Budimpešta',
+                badge: 'Putovanje #6',
+                type: 'trip',
+                coords: [47.4979, 19.0402],
+                emoji: '🇭🇺',
+                photo: 'putovanje_budimpesta.jpg',
+                title: 'Budimpešta — Kraljica Dunava',
+                desc: 'Ribarska tvrđava, osvijetljeni Parlament noću i duge šetnje uz rijeku.'
+            },
+            {
+                id: 'mallorca',
+                name: 'Mallorca',
+                badge: 'Putovanje #7',
+                type: 'trip',
+                coords: [39.6953, 3.0176],
+                emoji: '🇪🇸',
+                photo: 'putovanje_mallorca.jpg',
+                title: 'Mallorca — Rajske uvale i palme',
+                desc: 'Kristalno čiste uvale, španjolski ritam i savršeno ljetno uživanje s tobom.'
+            }
+        ];
 
-  // 3. INTERAKTIVNA KARTA (LEAFLET — BEZ API KLJUČA)
-  const DESTINATIONS = [
-    { name: "Pula", coords: [44.8666, 13.8496], img: "putovanje_pula.jpg", desc: "Opća gimnazija i naš rodni grad gdje je sve počelo." },
-    { name: "Zagreb", coords: [45.8150, 15.9819], img: "putovanje_zagreb.jpg", desc: "5. paviljon na Savi, PMF, TVZ, Gyms4You Matrix i naš dom u Motovunskoj 4." },
-    { name: "Ljubljana", coords: [46.0569, 14.5058], img: "putovanje_ljubljana.jpg", desc: "Šetnje uz Ljubljanicu, Tromostovje i naš zajednički bijeg u susjedstvo." },
-    { name: "Beograd", coords: [44.7866, 20.4489], img: "putovanje_beograd.jpg", desc: "Kalemegdan, vrhunska hrana, smijeh i nezaboravni trenuci." },
-    { name: "Budimpešta", coords: [47.4979, 19.0402], img: "putovanje_budimpesta.jpg", desc: "Pogled na Parlament noću i duge šetnje uz Dunav." },
-    { name: "Malta", coords: [35.9375, 14.3754], img: "putovanje_malta.jpg", desc: "Sunce, tirkizno more i istraživanje svakog kutka otoka." },
-    { name: "Grčka", coords: [37.9838, 23.7275], img: "putovanje_grcka.jpg", desc: "Povijest, giros, sunce i naše zajedničko grčko ljeto." },
-    { name: "Istanbul", coords: [41.0082, 28.9784], img: "putovanje_istanbul.jpg", desc: "Gdje se spajaju Europa i Azija — mirisi začina i čarobna atmosfera." },
-    { name: "Mallorca", coords: [39.6953, 3.0176], img: "putovanje_mallorca.jpg", desc: "Najljepše uvale, plaže i uživanje na najjače!" }
-  ];
+        /* =========================================================
+           2. POZADINSKI MATEMATIČKI SIMBOLI & TOAST PORUKE
+        ========================================================= */
+        function initMathBackground() {
+            const container = document.getElementById('math-bg');
+            const symbols = ['π', '∞', '∑', '♥', '∫', '√', 'Δ', 'θ', '23', 'lim', '∀'];
+            for (let i = 0; i < 24; i++) {
+                const el = document.createElement('div');
+                el.className = 'math-symbol';
+                el.textContent = symbols[i % symbols.length];
+                el.style.left = `${Math.random() * 94}%`;
+                el.style.top = `${Math.random() * 94}%`;
+                el.style.fontSize = `${Math.floor(Math.random() * 24) + 18}px`;
+                el.style.animationDelay = `${Math.random() * 10}s`;
+                el.style.animationDuration = `${15 + Math.random() * 12}s`;
+                container.appendChild(el);
+            }
+        }
 
-  const map = L.map('travel-map').setView([42.5, 16.5], 4);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
+        let toastTimer;
+        function showToast(message) {
+            const box = document.getElementById('toast-box');
+            const text = document.getElementById('toast-text');
+            text.textContent = message;
+            box.classList.remove('opacity-0', '-translate-y-4');
+            box.classList.add('opacity-100', 'translate-y-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                box.classList.add('opacity-0', '-translate-y-4');
+                box.classList.remove('opacity-100', 'translate-y-0');
+            }, 2800);
+        }
 
-  const chipsContainer = document.getElementById('dest-chips');
-  const latlngs = [];
+        function fireConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 95,
+                    spread: 75,
+                    origin: { y: 0.65 },
+                    colors: ['#fbbf24', '#f43f5e', '#10b981', '#c084fc', '#ffffff']
+                });
+            }
+        }
 
-  function showDest(dest) {
-    const card = document.getElementById('dest-card');
-    document.getElementById('dest-title').textContent = "📍 " + dest.name;
-    document.getElementById('dest-desc').textContent = dest.desc;
-    const img = document.getElementById('dest-img');
-    img.style.display = 'none';
-    img.src = dest.img;
-    img.onload = () => { img.style.display = 'block'; };
-    img.onerror = () => { img.style.display = 'none'; };
-    card.style.display = 'block';
-    map.flyTo(dest.coords, 6, { duration: 1.2 });
-  }
+        /* =========================================================
+           3. LIVE LJUBAVNI BROJAČ
+        ========================================================= */
+        function updateLoveCounter() {
+            const now = new Date();
+            const diff = Math.max(0, now - ANNIVERSARY_DATE);
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const mins = Math.floor((diff / 1000 / 60) % 60);
+            const secs = Math.floor((diff / 1000) % 60);
 
-  DESTINATIONS.forEach(dest => {
-    latlngs.push(dest.coords);
-    const marker = L.marker(dest.coords).addTo(map);
-    marker.bindPopup(`<b>${dest.name}</b><br>${dest.desc}`);
-    marker.on('click', () => showDest(dest));
+            document.getElementById('count-days').textContent = days;
+            document.getElementById('count-hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('count-mins').textContent = String(mins).padStart(2, '0');
+            document.getElementById('count-secs').textContent = String(secs).padStart(2, '0');
+        }
+        setInterval(updateLoveCounter, 1000);
+        updateLoveCounter();
 
-    const chip = document.createElement('button');
-    chip.className = 'dest-chip';
-    chip.textContent = dest.name;
-    chip.onclick = () => showDest(dest);
-    chipsContainer.appendChild(chip);
-  });
+        /* =========================================================
+           4. NININ DOKLE IGRICA (6 RAZINA + HR TIPKOVNICA + TIMELINE)
+        ========================================================= */
+        const MAX_GUESSES = 6;
+        let currentLevelIdx = 0;
+        let currentRow = 0;
+        let currentCol = 0;
+        let boardState = [];
+        let isLevelLocked = false;
+        let unlockedLevels = new Set();
+        let keyStates = {};
 
-  L.polyline(latlngs, { color: '#f43f5e', weight: 2, dashArray: '6, 6' }).addTo(map);
-  setTimeout(() => { map.invalidateSize(); }, 500);
+        const KEYBOARD_ROWS = [
+            ['E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P', 'Š', 'Đ'],
+            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Č', 'Ć'],
+            ['ENTER', 'Y', 'X', 'C', 'V', 'B', 'N', 'M', 'Ž', '⌫']
+        ];
 
-  // 4. MATEMATIKA
-  function checkMath(btn, isCorrect) {
-    document.querySelectorAll('.math-btn').forEach(b => b.classList.remove('right', 'wrong'));
-    const fb = document.getElementById('math-feedback');
-    if (isCorrect) {
-      btn.classList.add('right');
-      fb.style.color = '#6ee7b7';
-      fb.textContent = "✅ Q.E.D.! Dokazano s 100% točnošću — buduća profesorica ne griješi!";
-      launchConfetti();
-    } else {
-      btn.classList.add('wrong');
-      fb.style.color = '#fda4af';
-      fb.textContent = "❌ Provjeri derivaciju i pokušaj ponovno!";
-    }
-  }
+        function initDokleLevel(levelIdx) {
+            currentLevelIdx = levelIdx;
+            const level = DOKLE_LEVELS[levelIdx];
+            const wordLen = level.word.length;
 
-  // 5. GREBALICE
-  const COUPONS = [
-    "🏋️‍♀️ KUPON #1: Trening u Gyms4You u potpunosti po tvom izboru (bez prigovora!)",
-    "🍽️ KUPON #2: Rođendanska večera po tvom izboru + desert na moj račun",
-    "💆‍♀️ KUPON #3: 45 minuta masaže i maženja nakon napornog dana na PMF-u"
-  ];
+            currentRow = 0;
+            currentCol = 0;
+            isLevelLocked = false;
+            keyStates = {};
+            boardState = Array.from({ length: MAX_GUESSES }, () => Array(wordLen).fill(''));
 
-  const scratchGrid = document.getElementById('scratch-grid');
-  COUPONS.forEach(text => {
-    const wrap = document.createElement('div');
-    wrap.className = 'scratch-item';
-    wrap.textContent = text;
+            document.getElementById('level-indicator').textContent = `Razina ${levelIdx + 1} / ${DOKLE_LEVELS.length}`;
+            document.getElementById('level-title').textContent = level.title;
 
-    const canvas = document.createElement('canvas');
-    canvas.className = 'scratch-canvas';
-    wrap.appendChild(canvas);
-    scratchGrid.appendChild(wrap);
+            const hintBox = document.getElementById('hint-box');
+            hintBox.classList.add('hidden');
+            hintBox.textContent = `💡 Hint: ${level.hint}`;
 
-    setTimeout(() => {
-      canvas.width = wrap.offsetWidth;
-      canvas.height = wrap.offsetHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#475569';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#e2e8f0';
-      ctx.font = 'bold 14px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('✨ Ostruži prstom za nagradu ✨', canvas.width / 2, canvas.height / 2 + 5);
+            renderLevelPills();
+            renderBoard(wordLen);
+            renderKeyboard();
+        }
 
-      let scratching = false;
-      const scratch = (e) => {
-        if (!scratching) return;
-        const rect = canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.beginPath();
-        ctx.arc(clientX - rect.left, clientY - rect.top, 20, 0, Math.PI * 2);
-        ctx.fill();
-      };
+        function renderLevelPills() {
+            const container = document.getElementById('level-pills');
+            container.innerHTML = '';
+            DOKLE_LEVELS.forEach((lvl, idx) => {
+                const btn = document.createElement('button');
+                const isDone = unlockedLevels.has(idx);
+                const isCurrent = idx === currentLevelIdx;
 
-      canvas.addEventListener('mousedown', () => scratching = true);
-      canvas.addEventListener('mouseup', () => scratching = false);
-      canvas.addEventListener('mousemove', scratch);
-      canvas.addEventListener('touchstart', (e) => { scratching = true; scratch(e); });
-      canvas.addEventListener('touchend', () => scratching = false);
-      canvas.addEventListener('touchmove', (e) => { e.preventDefault(); scratch(e); });
-    }, 100);
-  });
+                let cls = 'px-3 py-1 rounded-full text-xs font-bold transition cursor-pointer ';
+                if (isCurrent) {
+                    cls += 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30';
+                } else if (isDone) {
+                    cls += 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/40';
+                } else {
+                    cls += 'bg-slate-800/80 text-slate-400 border border-white/10 hover:text-white';
+                }
 
-  // 6. KREATIVNI KUTAK (CRTANJE)
-  const drawCanvas = document.getElementById('draw-canvas');
-  const dCtx = drawCanvas.getContext('2d');
-  let brushColor = '#f43f5e';
-  let drawing = false;
+                btn.className = cls;
+                btn.textContent = isDone ? `✓ Razina ${idx + 1}` : `Razina ${idx + 1}`;
+                btn.onclick = () => initDokleLevel(idx);
+                container.appendChild(btn);
+            });
+        }
 
-  function resizeDrawCanvas() {
-    drawCanvas.width = drawCanvas.offsetWidth;
-    drawCanvas.height = drawCanvas.offsetHeight;
-    dCtx.fillStyle = '#ffffff';
-    dCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
-  }
-  setTimeout(resizeDrawCanvas, 100);
+        function renderBoard(wordLen) {
+            const board = document.getElementById('dokle-board');
+            board.innerHTML = '';
+            board.style.gridTemplateRows = `repeat(${MAX_GUESSES}, minmax(0, 1fr))`;
 
-  function setBrush(c) { brushColor = c; }
-  function clearCanvas() {
-    dCtx.fillStyle = '#ffffff';
-    dCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
-  }
-  function saveDrawing() {
-    const link = document.createElement('a');
-    link.download = 'nina-23-crtez.png';
-    link.href = drawCanvas.toDataURL();
-    link.click();
-  }
+            const tileSizeClass = wordLen >= 7
+                ? 'w-10 h-10 sm:w-12 sm:h-12 text-lg sm:text-xl'
+                : 'w-11 h-11 sm:w-14 sm:h-14 text-xl sm:text-2xl';
 
-  function getPos(e) {
-    const rect = drawCanvas.getBoundingClientRect();
-    const cx = e.touches ? e.touches[0].clientX : e.clientX;
-    const cy = e.touches ? e.touches[0].clientY : e.clientY;
-    return { x: cx - rect.left, y: cy - rect.top };
-  }
+            for (let r = 0; r < MAX_GUESSES; r++) {
+                const rowEl = document.createElement('div');
+                rowEl.id = `dokle-row-${r}`;
+                rowEl.className = 'flex gap-1.5 sm:gap-2 justify-center';
 
-  drawCanvas.addEventListener('mousedown', (e) => {
-    drawing = true;
-    const p = getPos(e);
-    dCtx.beginPath();
-    dCtx.moveTo(p.x, p.y);
-  });
-  drawCanvas.addEventListener('mousemove', (e) => {
-    if (!drawing) return;
-    const p = getPos(e);
-    dCtx.strokeStyle = brushColor;
-    dCtx.lineWidth = 4;
-    dCtx.lineCap = 'round';
-    dCtx.lineTo(p.x, p.y);
-    dCtx.stroke();
-  });
-  drawCanvas.addEventListener('mouseup', () => drawing = false);
+                for (let c = 0; c < wordLen; c++) {
+                    const tile = document.createElement('div');
+                    tile.id = `tile-${r}-${c}`;
+                    tile.className = `tile ${tileSizeClass} rounded-xl border-2 border-slate-700/80 bg-slate-950/70 flex items-center justify-center font-display font-bold uppercase text-white select-none`;
+                    rowEl.appendChild(tile);
+                }
+                board.appendChild(rowEl);
+            }
+        }
 
-  drawCanvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    drawing = true;
-    const p = getPos(e);
-    dCtx.beginPath();
-    dCtx.moveTo(p.x, p.y);
-  });
-  drawCanvas.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    if (!drawing) return;
-    const p = getPos(e);
-    dCtx.strokeStyle = brushColor;
-    dCtx.lineWidth = 4;
-    dCtx.lineCap = 'round';
-    dCtx.lineTo(p.x, p.y);
-    dCtx.stroke();
-  });
-  drawCanvas.addEventListener('touchend', () => drawing = false);
+        function renderKeyboard() {
+            const kb = document.getElementById('dokle-keyboard');
+            kb.innerHTML = '';
 
-  // KONFETI
-  function launchConfetti() {
-    if (typeof confetti === 'function') {
-      confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
-    }
-  }
-</script>
+            KEYBOARD_ROWS.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'flex justify-center gap-1 sm:gap-1.5';
 
+                row.forEach(key => {
+                    const btn = document.createElement('button');
+                    const isSpecial = key === 'ENTER' || key === '⌫';
+                    const stateClass = keyStates[key]
+                        ? `state-${keyStates[key]}`
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-100 border-white/10';
+
+                    btn.className = `key-btn ${isSpecial ? 'px-2.5 sm:px-4 text-xs' : 'flex-1 max-w-[38px] sm:max-w-[44px] text-sm sm:text-base'} h-11 sm:h-12 rounded-lg font-display font-bold border ${stateClass} flex items-center justify-center cursor-pointer`;
+                    btn.textContent = key;
+                    btn.onclick = () => handleKeyInput(key);
+                    rowDiv.appendChild(btn);
+                });
+
+                kb.appendChild(rowDiv);
+            });
+        }
+
+        function showHint() {
+            document.getElementById('hint-box').classList.remove('hidden');
+        }
+
+        // Gumb 'Preskoči / Otkrij riječ' za svaki slučaj
+        function revealCurrentWord() {
+            if (isLevelLocked) return;
+            const target = DOKLE_LEVELS[currentLevelIdx].word;
+            boardState[currentRow] = target.split('');
+            for (let c = 0; c < target.length; c++) {
+                const tile = document.getElementById(`tile-${currentRow}-${c}`);
+                tile.textContent = target[c];
+            }
+            currentCol = target.length;
+            evaluateGuess();
+        }
+
+        function handleKeyInput(key) {
+            if (isLevelLocked) return;
+            const targetWord = DOKLE_LEVELS[currentLevelIdx].word;
+            const wordLen = targetWord.length;
+
+            if (key === '⌫' || key === 'BACKSPACE') {
+                if (currentCol > 0) {
+                    currentCol--;
+                    boardState[currentRow][currentCol] = '';
+                    const tile = document.getElementById(`tile-${currentRow}-${currentCol}`);
+                    tile.textContent = '';
+                    tile.classList.remove('border-slate-400', 'tile-pop');
+                }
+                return;
+            }
+
+            if (key === 'ENTER') {
+                if (currentCol < wordLen) {
+                    const rowEl = document.getElementById(`dokle-row-${currentRow}`);
+                    rowEl.classList.remove('tile-shake');
+                    void rowEl.offsetWidth;
+                    rowEl.classList.add('tile-shake');
+                    showToast(`Upiši svih ${wordLen} slova!`);
+                    return;
+                }
+                evaluateGuess();
+                return;
+            }
+
+            if (/^[A-ZČĆĐŠŽ]$/.test(key) && currentCol < wordLen) {
+                boardState[currentRow][currentCol] = key;
+                const tile = document.getElementById(`tile-${currentRow}-${currentCol}`);
+                tile.textContent = key;
+                tile.classList.add('border-slate-400', 'tile-pop');
+                currentCol++;
+            }
+        }
+
+        function evaluateGuess() {
+            isLevelLocked = true;
+            const target = DOKLE_LEVELS[currentLevelIdx].word;
+            const wordLen = target.length;
+            const guess = boardState[currentRow].join('');
+
+            const result = Array(wordLen).fill('absent');
+            const targetArr = target.split('');
+            const guessArr = guess.split('');
+
+            // 1. prolaz: zeleno (točno mjesto)
+            for (let i = 0; i < wordLen; i++) {
+                if (guessArr[i] === targetArr[i]) {
+                    result[i] = 'correct';
+                    targetArr[i] = null;
+                }
+            }
+
+            // 2. prolaz: žuto (krivo mjesto)
+            for (let i = 0; i < wordLen; i++) {
+                if (result[i] === 'correct') continue;
+                const foundIdx = targetArr.indexOf(guessArr[i]);
+                if (foundIdx !== -1) {
+                    result[i] = 'present';
+                    targetArr[foundIdx] = null;
+                }
+            }
+
+            for (let i = 0; i < wordLen; i++) {
+                const tile = document.getElementById(`tile-${currentRow}-${i}`);
+                const letter = guessArr[i];
+                const state = result[i];
+
+                setTimeout(() => {
+                    tile.classList.add('tile-flip');
+                    setTimeout(() => {
+                        tile.classList.add(`state-${state}`);
+                    }, 220);
+
+                    const prev = keyStates[letter];
+                    if (state === 'correct' || (state === 'present' && prev !== 'correct') || (!prev && state === 'absent')) {
+                        keyStates[letter] = state;
+                    }
+                }, i * 150);
+            }
+
+            setTimeout(() => {
+                renderKeyboard();
+
+                if (guess === target) {
+                    for (let i = 0; i < wordLen; i++) {
+                        const tile = document.getElementById(`tile-${currentRow}-${i}`);
+                        setTimeout(() => tile.classList.add('tile-bounce'), i * 75);
+                    }
+                    unlockTimelineEntry(currentLevelIdx);
+                    fireConfetti();
+
+                    if (unlockedLevels.size === DOKLE_LEVELS.length) {
+                        showToast('🎉 BRAVO NINA! Otključala si svih 6 poglavlja naše priče!');
+                    } else {
+                        showToast('✨ Točno! Otključano novo poglavlje u vremenskoj lenti!');
+                        setTimeout(() => {
+                            const nextIdx = DOKLE_LEVELS.findIndex((_, idx) => !unlockedLevels.has(idx));
+                            if (nextIdx !== -1) {
+                                initDokleLevel(nextIdx);
+                            }
+                        }, 2000);
+                    }
+                } else {
+                    currentRow++;
+                    currentCol = 0;
+                    if (currentRow >= MAX_GUESSES) {
+                        showToast(`Riječ je bila ${target} — pokušaj ponovno!`);
+                        setTimeout(() => initDokleLevel(currentLevelIdx), 2000);
+                    } else {
+                        isLevelLocked = false;
+                        if (currentRow === 3) showHint();
+                    }
+                }
+            }, wordLen * 150 + 340);
+        }
+
+        function unlockTimelineEntry(levelIdx) {
+            unlockedLevels.add(levelIdx);
+            renderLevelPills();
+            document.getElementById('unlocked-count').textContent = unlockedLevels.size;
+
+            document.getElementById('timeline-empty').classList.add('hidden');
+            const timeline = document.getElementById('memories-timeline');
+            timeline.classList.remove('hidden');
+            timeline.innerHTML = '';
+
+            Array.from(unlockedLevels).sort((a, b) => a - b).forEach(idx => {
+                const lvl = DOKLE_LEVELS[idx];
+                const item = document.createElement('div');
+                item.className = 'relative bg-slate-950/75 border border-emerald-500/30 rounded-2xl p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center';
+                item.innerHTML = `
+                    <!-- Točka na vremenskoj lenti -->
+                    <span class="absolute -left-[33px] sm:-left-[41px] top-6 w-4 h-4 rounded-full bg-emerald-400 border-4 border-slate-950 shadow-md shadow-emerald-400/50"></span>
+                    
+                    <div class="h-36 sm:h-32 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 overflow-hidden flex items-center justify-center relative">
+                        <img src="${lvl.image}" alt="${lvl.storyTitle}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="hidden flex-col items-center justify-center text-center p-2">
+                            <span class="text-3xl mb-1">${lvl.fallbackEmoji}</span>
+                            <span class="text-[10px] text-slate-400">${lvl.image}</span>
+                        </div>
+                        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-emerald-500 text-slate-950 text-[11px] font-extrabold">
+                            ${lvl.word}
+                        </span>
+                    </div>
+
+                    <div class="sm:col-span-2 space-y-1.5">
+                        <h4 class="font-display font-bold text-white text-base sm:text-lg">${lvl.storyTitle}</h4>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">${lvl.storyText}</p>
+                    </div>
+                `;
+                timeline.appendChild(item);
+            });
+        }
+
+        // Podrška za fizičku tipkovnicu
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            const key = e.key.toUpperCase();
+            if (key === 'ENTER' || key === 'BACKSPACE' || /^[A-ZČĆĐŠŽ]$/.test(key)) {
+                handleKeyInput(key);
+            }
+        });
+
+        /* =========================================================
+           5. INTERAKTIVNA LEAFLET.JS KARTA PUTOVANJA
+        ========================================================= */
+        let travelMap;
+        let mapMarkers = {};
+
+        function initTravelMap() {
+            // Centrirano na Europu/Mediteran da se lijepo vide sve lokacije od Mallorce do Istanbula
+            travelMap = L.map('travel-map', {
+                scrollWheelZoom: false
+            }).setView([42.5, 16.5], 4);
+
+            // Tamni CartoDB Dark Matter sloj
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 18
+            }).addTo(travelMap);
+
+            const zagrebCoords = [45.8150, 15.9819];
+            const btnContainer = document.getElementById('travel-buttons');
+
+            MAP_LOCATIONS.forEach(loc => {
+                // Isprekidana linija od Zagreba do svake destinacije (i Pule)
+                if (loc.id !== 'zagreb') {
+                    L.polyline([zagrebCoords, loc.coords], {
+                        color: loc.type === 'base' ? '#fbbf24' : '#f43f5e',
+                        weight: 2,
+                        opacity: 0.65,
+                        dashArray: '6, 8'
+                    }).addTo(travelMap);
+                }
+
+                // Prilagođeni pin marker (zlatni za baze, rozi za putovanja)
+                const pinBg = loc.type === 'base' ? 'bg-amber-400 text-slate-950' : 'bg-rose-500 text-white';
+                const customIcon = L.divIcon({
+                    className: '',
+                    html: `<div class="custom-pin w-8 h-8 ${pinBg}">${loc.emoji}</div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [0, -16]
+                });
+
+                const marker = L.marker(loc.coords, { icon: customIcon }).addTo(travelMap);
+                marker.bindPopup(`
+                    <div class="text-center p-1">
+                        <div class="text-xs font-bold text-amber-300">${loc.badge}</div>
+                        <div class="font-bold text-sm text-white">${loc.name}</div>
+                    </div>
+                `);
+
+                marker.on('click', () => selectTravelLocation(loc.id, false));
+                mapMarkers[loc.id] = marker;
+
+                // Gumb ispod karte
+                const btn = document.createElement('button');
+                const baseStyle = loc.type === 'base'
+                    ? 'border-amber-400/40 text-amber-200 hover:bg-amber-400/20'
+                    : 'border-rose-400/30 text-slate-200 hover:bg-rose-500/20';
+
+                btn.id = `travel-btn-${loc.id}`;
+                btn.className = `px-3 py-1.5 rounded-xl bg-slate-900/80 border ${baseStyle} text-xs sm:text-sm font-medium transition flex items-center gap-1.5 cursor-pointer`;
+                btn.innerHTML = `<span>${loc.emoji}</span><span>${loc.name}</span>`;
+                btn.onclick = () => selectTravelLocation(loc.id, true);
+                btnContainer.appendChild(btn);
+            });
+
+            // Početno odaberi Zagreb
+            selectTravelLocation('zagreb', false);
+        }
+
+        function selectTravelLocation(locId, flyToPin) {
+            const loc = MAP_LOCATIONS.find(l => l.id === locId);
+            if (!loc) return;
+
+            document.getElementById('travel-badge').textContent = loc.badge;
+            document.getElementById('travel-title').textContent = loc.title;
+            document.getElementById('travel-desc').textContent = loc.desc;
+            document.getElementById('travel-emoji').textContent = loc.emoji;
+            document.getElementById('travel-img-hint').textContent = loc.photo;
+
+            // Pokušaj učitati sliku putovanja; ako ne postoji, onerror prikazuje emoji fallback
+            const photoEl = document.getElementById('travel-photo');
+            const fallbackEl = document.getElementById('travel-fallback');
+            photoEl.classList.add('hidden');
+            fallbackEl.classList.remove('hidden');
+            photoEl.src = loc.photo;
+
+            // Označi aktivni gumb
+            document.querySelectorAll('#travel-buttons button').forEach(b => {
+                b.classList.remove('ring-2', 'ring-amber-400', 'bg-slate-800');
+            });
+            const activeBtn = document.getElementById(`travel-btn-${locId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('ring-2', 'ring-amber-400', 'bg-slate-800');
+            }
+
+            if (flyToPin && travelMap && mapMarkers[locId]) {
+                travelMap.flyTo(loc.coords, 6, { duration: 1.2 });
+                mapMarkers[locId].openPopup();
+            }
+        }
+
+        /* =========================================================
+           6. MATEMATIČKI DOKAZ LJUBAVI (MINI KVIZ)
+        ========================================================= */
+        function checkMathAnswer(idx) {
+            const fb = document.getElementById('math-feedback');
+            fb.classList.remove('hidden', 'bg-emerald-500/15', 'border-emerald-500/40', 'text-emerald-200', 'bg-amber-500/15', 'border-amber-500/40', 'text-amber-200');
+
+            if (idx === 0) {
+                fb.classList.add('bg-emerald-500/15', 'border-emerald-500/40', 'text-emerald-200');
+                fb.innerHTML = '✅ <strong>Q.E.D. (Što je i trebalo dokazati)!</strong> Brojnik raste brže od bilo kakvih briga — limes teži u <strong>+&infin;</strong>! Čista petica na PMF-u!';
+                fireConfetti();
+            } else if (idx === 1) {
+                fb.classList.add('bg-amber-500/15', 'border-amber-500/40', 'text-amber-200');
+                fb.innerHTML = '🌌 42 jest odgovor na smisao života i svemira, ali naša sreća ipak nema gornju među! Probaj ponovno.';
+            } else {
+                fb.classList.add('bg-amber-500/15', 'border-amber-500/40', 'text-amber-200');
+                fb.innerHTML = '🧮 Ovdje nije 0/0 nego &infin;/0 — primijeni malo PMF intuicije i probaj ponovno!';
+            }
+        }
+
+        /* =========================================================
+           7. DIGITALNE GREBALICE (3 SCRATCH-OFF KUPONA)
+        ========================================================= */
+        function initScratchCards() {
+            const canvases = document.querySelectorAll('.scratch-canvas');
+            canvases.forEach(canvas => {
+                const parent = canvas.parentElement;
+                const dpr = window.devicePixelRatio || 1;
+                const rect = parent.getBoundingClientRect();
+
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+
+                const ctx = canvas.getContext('2d');
+                ctx.scale(dpr, dpr);
+
+                const grad = ctx.createLinearGradient(0, 0, rect.width, rect.height);
+                grad.addColorStop(0, '#d97706');
+                grad.addColorStop(0.5, '#fbbf24');
+                grad.addColorStop(1, '#b45309');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, rect.width, rect.height);
+
+                ctx.fillStyle = '#090d16';
+                ctx.font = 'bold 13px "Space Grotesk", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`✨ ${canvas.dataset.label} ✨`, rect.width / 2, rect.height / 2);
+
+                let isScratching = false;
+
+                function scratch(clientX, clientY) {
+                    const bounds = canvas.getBoundingClientRect();
+                    const x = clientX - bounds.left;
+                    const y = clientY - bounds.top;
+
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 22, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                canvas.addEventListener('mousedown', (e) => { isScratching = true; scratch(e.clientX, e.clientY); });
+                window.addEventListener('mouseup', () => { isScratching = false; });
+                canvas.addEventListener('mousemove', (e) => { if (isScratching) scratch(e.clientX, e.clientY); });
+
+                canvas.addEventListener('touchstart', (e) => {
+                    isScratching = true;
+                    const t = e.touches[0];
+                    scratch(t.clientX, t.clientY);
+                }, { passive: true });
+                canvas.addEventListener('touchmove', (e) => {
+                    if (!isScratching) return;
+                    const t = e.touches[0];
+                    scratch(t.clientX, t.clientY);
+                }, { passive: true });
+                canvas.addEventListener('touchend', () => { isScratching = false; });
+            });
+        }
+
+        /* =========================================================
+           8. KREATIVNI KUTAK (DIGITALNI BLOK ZA CRTANJE)
+        ========================================================= */
+        let drawCanvas, drawCtx;
+        let isDrawing = false;
+        let brushColor = '#f43f5e';
+        let isEraser = false;
+
+        function initDrawingBoard() {
+            drawCanvas = document.getElementById('drawing-canvas');
+            drawCtx = drawCanvas.getContext('2d');
+
+            const rect = drawCanvas.parentElement.getBoundingClientRect();
+            drawCanvas.width = rect.width;
+            drawCanvas.height = rect.height;
+
+            drawCtx.fillStyle = '#030712';
+            drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+            drawCtx.lineCap = 'round';
+            drawCtx.lineJoin = 'round';
+
+            function getCoords(e) {
+                const bounds = drawCanvas.getBoundingClientRect();
+                const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                const cy = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: cx - bounds.left, y: cy - bounds.top };
+            }
+
+            function start(e) {
+                isDrawing = true;
+                const { x, y } = getCoords(e);
+                drawCtx.beginPath();
+                drawCtx.moveTo(x, y);
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                if (e.touches) e.preventDefault();
+                const { x, y } = getCoords(e);
+                drawCtx.strokeStyle = isEraser ? '#030712' : brushColor;
+                drawCtx.lineWidth = document.getElementById('brush-size').value;
+                drawCtx.lineTo(x, y);
+                drawCtx.stroke();
+            }
+
+            function stop() {
+                isDrawing = false;
+            }
+
+            drawCanvas.addEventListener('mousedown', start);
+            drawCanvas.addEventListener('mousemove', draw);
+            window.addEventListener('mouseup', stop);
+
+            drawCanvas.addEventListener('touchstart', start, { passive: false });
+            drawCanvas.addEventListener('touchmove', draw, { passive: false });
+            drawCanvas.addEventListener('touchend', stop);
+        }
+
+        function selectTool(color, eraserMode, btnEl) {
+            brushColor = color;
+            isEraser = eraserMode;
+            document.querySelectorAll('.tool-btn').forEach(b => {
+                b.classList.remove('ring-2', 'ring-white', 'scale-110');
+            });
+            btnEl.classList.add('ring-2', 'ring-white', 'scale-110');
+        }
+
+        function clearDrawing() {
+            drawCtx.fillStyle = '#030712';
+            drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+        }
+
+        function downloadDrawing() {
+            const link = document.createElement('a');
+            link.download = 'Nina-23-rodendan-crtez.png';
+            link.href = drawCanvas.toDataURL('image/png');
+            link.click();
+            showToast('🎨 Crtež je spremljen na tvoj uređaj!');
+        }
+
+        /* =========================================================
+           9. OTVARANJE ZAVRŠNE ČESTITKE + KONFETI
+        ========================================================= */
+        function openBirthdayLetter() {
+            document.getElementById('letter-closed').classList.add('hidden');
+            const opened = document.getElementById('letter-opened');
+            opened.classList.remove('hidden');
+            opened.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            fireConfetti();
+            setTimeout(fireConfetti, 450);
+        }
+
+        /* =========================================================
+           10. INICIJALIZACIJA SVIH MODULA NA UČITAVANJU
+        ========================================================= */
+        window.addEventListener('load', () => {
+            initMathBackground();
+            initDokleLevel(0);
+            initTravelMap();
+            initScratchCards();
+            initDrawingBoard();
+            setTimeout(fireConfetti, 500);
+        });
+    </script>
 </body>
 </html>
