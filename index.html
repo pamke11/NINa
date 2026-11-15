@@ -930,10 +930,12 @@
             board.innerHTML = '';
             board.style.gridTemplateRows = `repeat(${MAX_GUESSES}, minmax(0, 1fr))`;
 
-            const tileSizeClass = wordLen >= 7
-                ? 'w-10 h-10 sm:w-12 sm:h-12 text-lg sm:text-xl'
-                : 'w-11 h-11 sm:w-14 sm:h-14 text-xl sm:text-2xl';
-
+           let tileSizeClass = 'w-11 h-11 sm:w-14 sm:h-14 text-xl sm:text-2xl';
+            if (wordLen >= 9) {
+                tileSizeClass = 'w-7 h-9 sm:w-11 sm:h-12 text-sm sm:text-xl';
+            } else if (wordLen >= 7) {
+                tileSizeClass = 'w-10 h-10 sm:w-12 sm:h-12 text-lg sm:text-xl';
+            }
             for (let r = 0; r < MAX_GUESSES; r++) {
                 const rowEl = document.createElement('div');
                 rowEl.id = `dokle-row-${r}`;
