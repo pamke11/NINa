@@ -23,6 +23,7 @@
         }
 
         body {
+            
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-primary);
             background-image: 
@@ -214,7 +215,7 @@
     </style>
 </head>
 <body class="antialiased selection:bg-rose-500/30 selection:text-rose-200">
-
+<div id="cat-bg" class="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-15 select-none"></div>
     <!-- Plutajući matematički simboli -->
     <div class="math-bg" id="math-bg" aria-hidden="true"></div>
 
@@ -1447,6 +1448,23 @@
             setTimeout(fireConfetti, 500);
         });
     </script>
+    <script>
+    (function initCatBackground() {
+        const container = document.getElementById('cat-bg');
+        if (!container) return;
+        const icons = ['🐱', '🐾', '🐈', '🐈‍⬛', '💜'];
+        for (let i = 0; i < 35; i++) {
+            const span = document.createElement('span');
+            span.textContent = icons[i % icons.length];
+            span.style.position = 'absolute';
+            span.style.left = Math.random() * 96 + '%';
+            span.style.top = Math.random() * 96 + '%';
+            span.style.fontSize = (Math.random() * 18 + 18) + 'px';
+            span.style.transform = `rotate(${Math.random() * 60 - 30}deg)`;
+            container.appendChild(span);
+        }
+    })();
+</script>
 <audio id="birthday-mp3" src="pjesma.mp3" loop></audio>
 
     <button onclick="const a=document.getElementById('birthday-mp3'); if(a.paused){a.play(); this.textContent='⏸️ Pauziraj pjesmu';}else{a.pause(); this.textContent='🎵 Pusti pjesmu';}"
