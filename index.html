@@ -798,7 +798,21 @@
                 title: 'Mallorca',
                 desc: 'Ludi španjolci, ali ti u kombinaciji s desperadosom si još luđa.'
             }
+            const photoEl = document.getElementById('travel-photo');
+            const fallbackEl = document.getElementById('travel-fallback');
+            photoEl.classList.add('hidden');
+            fallbackEl.classList.remove('hidden');
+
+            // Okreni sliku za 180 stupnjeva ako je Grčka ili Budimpešta
+            if (locId === 'grcka' || locId === 'budimpesta') {
+                photoEl.style.transform = 'rotate(180deg)';
+            } else {
+                photoEl.style.transform = 'none';
+            }
+
+            photoEl.src = loc.photo;
         ];
+        
 
         /* =========================================================
            2. POZADINSKI MATEMATIČKI SIMBOLI & TOAST PORUKE
